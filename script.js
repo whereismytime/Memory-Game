@@ -47,7 +47,8 @@ function updateUserScore(username, score) {
     if (!userData[username]) {
         userData[username] = { score: 0 };
     }
-    userData[username].score += score; // Прибавляем к текущему счету
+    // Суммируем текущий счет с новым значением и ограничиваем минимумом -9999
+    userData[username].score = Math.max(userData[username].score + score, -9999);
     saveUserData(userData);
 }
 
@@ -79,21 +80,40 @@ function updateLeaderboard() {
 
         leaderboardTable.append(`
             <tr class="${rowClass}">
+                <td>${index + 1}</td>
                 <td>${username}</td>
-                <td>Обычный</td>
                 <td>${data.score}</td>
             </tr>
         `);
     });
 }
 
-
-
 // Код для index.html
 $(document).ready(function () {
-    initializeBotData(); // Инициализация данных ботов
+    initializeBotData();
 
     const currentUser = getCurrentUser();
+    const selectedMode = { mode: 'Обычный', gridSize: 8 };
+
+    // Обновление состояния кнопок
+    function updateModeSelection() {
+        $('.mode-btn').removeClass('active');
+        $(`#${selectedMode.mode.toLowerCase()}-mode`).addClass('active');
+        updateGridSelectionOptions();
+    }
+
+    function updateGridSelectionOptions() {
+        $('.grid-btn').each(function () {
+            let baseGridSize = parseInt($(this).data('base-grid'), 10);
+            let adjustedGridSize = selectedMode.mode === 'Хард' ? baseGridSize + 2 : baseGridSize;
+            $(this).text(`${adjustedGridSize} карточек`).data('grid', adjustedGridSize);
+        });
+    }
+
+    function updateGridSelection() {
+        $('.grid-btn').removeClass('active');
+        $(`.grid-btn[data-grid="${selectedMode.gridSize}"]`).addClass('active');
+    }
 
     if (currentUser) {
         $('#player-name').hide();
@@ -107,14 +127,15 @@ $(document).ready(function () {
 
     // Обработчики для выбора режима
     $('.mode-btn').click(function () {
-        $('.mode-btn').removeClass('active');
-        $(this).addClass('active');
+        selectedMode.mode = $(this).text();
+        updateModeSelection();
+        updateGridSelectionOptions();
     });
 
     // Обработчики для выбора сетки
     $('.grid-btn').click(function () {
-        $('.grid-btn').removeClass('active');
-        $(this).addClass('active');
+        selectedMode.gridSize = $(this).data('grid');
+        updateGridSelection();
     });
 
     $('#start-button').click(function () {
@@ -126,23 +147,26 @@ $(document).ready(function () {
                 return;
             }
             setCurrentUser(playerName);
-            updateUserScore(playerName, 0); // Инициализируем счет игрока
+            updateUserScore(playerName, 0);
             $('#player-welcome').text(`Добро пожаловать, ${playerName}!`).show();
             $('#player-name').hide();
         } else {
             playerName = currentUser;
         }
 
-        // Получаем выбранный режим и размер сетки
-        const selectedMode = $('.mode-btn.active').text() || 'Обычный';
-        const gridSize = $('.grid-btn.active').data('grid') || 8;
+        const mode = selectedMode.mode;
+        const gridSize = selectedMode.gridSize;
 
-        // Перенаправляем на game.html с параметрами
-        window.location.href = `game.html?name=${encodeURIComponent(playerName)}&mode=${encodeURIComponent(selectedMode)}&gridSize=${gridSize}`;
+        window.location.href = `game.html?name=${encodeURIComponent(playerName)}&mode=${encodeURIComponent(mode)}&gridSize=${gridSize}`;
     });
+
+    updateModeSelection();
+    updateGridSelectionOptions();
 });
 
+
 // Код для game.html
+
 $(document).ready(function () {
     if (window.location.pathname.includes("game.html")) {
         const urlParams = new URLSearchParams(window.location.search);
@@ -150,16 +174,17 @@ $(document).ready(function () {
         const playerName = currentUser || urlParams.get('name');
         const gameMode = urlParams.get('mode') || "Обычный";
         const gridSize = parseInt(urlParams.get('gridSize')) || 8;
+        const isHardMode = gameMode === "Хард";
 
         $('#player-name-display').html(playerName);
         $('#mode-display').html(gameMode);
         $('#grid-size-display').html(`${gridSize} карточек`);
 
-        let images = generateImagePairs(gridSize / 2);
+        let images = generateImagePairs(gridSize / 2, isHardMode);
         let flippedCards = [];
         let matchedPairs = 0;
         let score = 0;
-        let multiplier = 1 + (gridSize - 8) / 10;
+        let multiplier = isHardMode ? getHardModeMultiplier(gridSize) : 1;
 
         createCards();
 
@@ -171,47 +196,84 @@ $(document).ready(function () {
             gameBoard.css('grid-template-columns', `repeat(${columns}, 100px)`);
         
             images.forEach(image => {
-                const card = $(`
-                    <div class="card" data-pair-id="${image.pairId}">
+                const card = $(`<div class="card" data-pair-id="${image.pairId}">
                         <div class="front">?</div>
                         <div class="back" style="background-image: url('${image.src}')"></div>
-                    </div>
-                `);
+                    </div>`);
                 gameBoard.append(card);
             });
         }
 
-        function generateImagePairs(numPairs) {
+        function generateImagePairs(numPairs, isHardMode) {
             let pairs = [];
-            for (let i = 1; i <= numPairs; i++) {
+        
+            // Если режим "Хард", уменьшаем количество пар, чтобы освободить место для бомб
+            const bombCount = isHardMode ? getBombCount(numPairs * 2) : 0;
+            const adjustedNumPairs = numPairs - Math.floor(bombCount / 2);
+        
+            // Генерируем пары изображений
+            for (let i = 1; i <= adjustedNumPairs; i++) {
                 pairs.push({ src: `img/img${i}.jpg`, pairId: i });
                 pairs.push({ src: `img/img${i}.jpg`, pairId: i });
             }
+        
+            // Добавляем бомбы, если включен режим "Хард"
+            if (isHardMode) {
+                for (let i = 0; i < bombCount; i++) {
+                    pairs.push({ src: 'img/imjBOMB.jpg', pairId: 'BOMB' });
+                }
+            }
+        
             return pairs.sort(() => Math.random() - 0.5);
+        }
+        
+
+        function getHardModeMultiplier(gridSize) {
+            switch (gridSize) {
+                case 8:
+                case 12: return 2.1;
+                case 16: return 2.3;
+                case 24: return 2.5;
+                case 32: return 3;
+                default: return 1;
+            }
+        }
+
+        function getBombCount(gridSize) {
+            if (gridSize <= 16) return 2; // Одна пара бомб
+            if (gridSize <= 24) return 4; // Две пары бомб
+            return 6; // Три пары бомб для больших сеток
         }
 
         $('#game-board').on('click', '.card', function () {
             if ($(this).hasClass('flipped') || flippedCards.length === 2) return;
-
+        
             $(this).addClass('flipped');
             flippedCards.push($(this));
-
+        
             if (flippedCards.length === 2) {
                 const firstCard = flippedCards[0];
                 const secondCard = flippedCards[1];
-
+        
                 if (firstCard.data('pair-id') === secondCard.data('pair-id')) {
-                    matchedPairs++;
-                    score += 100 * multiplier;
-                    $('#score-display').html(`<span class="label">Очки:</span> ${Math.round(score)}`);
-
-                    firstCard.addClass('match');
-                    secondCard.addClass('match');
-                    flippedCards = [];
-
-                    if (matchedPairs === gridSize / 2) {
-                        setTimeout(showVictoryMessage, 500);
+                    if (firstCard.data('pair-id') === 'BOMB') {
+                        score = Math.max(score - 5000, -9999); // Отнимаем 5000 очков, ограничиваем минимумом -9999
+                        $('#score-display').html(`<span class="label">Очки:</span> ${Math.round(score)}`);
+                        setTimeout(showLossMessage, 500); // Показываем сообщение о проигрыше
+                    } else {
+                        matchedPairs++;
+                        score += 100 * multiplier;
+                        $('#score-display').html(`<span class="label">Очки:</span> ${Math.round(score)}`);
+        
+                        firstCard.addClass('match');
+                        secondCard.addClass('match');
+                        flippedCards = [];
+        
+                        if (matchedPairs === Math.floor(gridSize / 2)) {
+                            setTimeout(showVictoryMessage, 500);
+                        }
                     }
+                    flippedCards = [];
                 } else {
                     setTimeout(() => {
                         firstCard.removeClass('flipped');
@@ -223,14 +285,21 @@ $(document).ready(function () {
         });
 
         function showVictoryMessage() {
-            $('#victory-message').addClass('active');
-            $('body').addClass('blur'); // Добавляем размытие к фону
-            updateUserScore(playerName, score); // Сохраняем обновленный счет
+            $('#victory-message').html('<p>Вы не попались!</p>').addClass('active');
+            $('body').addClass('blur');
+            updateUserScore(playerName, score); // Сохраняем обновленный счет в таблицу лидеров
             updateLeaderboard(); // Обновляем таблицу лидеров в реальном времени
         }
 
+        function showLossMessage() {
+            $('#victory-message').html('<p>Вы проиграли, попав на бомбу!</p>').addClass('active');
+            $('body').addClass('blur');
+            updateUserScore(playerName, score); // Сохраняем счет в таблицу лидеров при проигрыше
+            updateLeaderboard();
+        }
+
         $('#restart-button').click(function () {
-            $('body').removeClass('blur'); // Убираем размытие
+            $('body').removeClass('blur');
             location.reload();
         });
         

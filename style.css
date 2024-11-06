@@ -149,8 +149,15 @@ button:hover {
     transform: scale(1.05);
 }
 
+
+button:active {
+    transform: scale(0.95);
+}
+
 button.active {
     background-color: #ffcc00;
+    color: #fff;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 
@@ -332,9 +339,10 @@ body.blur #game-board, body.blur .game-info {
 
 .mode-selection .mode-btn.active,
 .grid-selection .grid-btn.active {
-    background-color: #ffcc00;
-    color: #fff;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    background-color: #ffcc00; /* Золотой цвет для активной кнопки */
+    color: #ffffff; /* Белый текст для контраста */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Тень для выделения */
+    transform: scale(1.05); /* Лёгкое увеличение для визуального эффекта */
 }
 
 
@@ -348,7 +356,7 @@ body.blur #game-board, body.blur .game-info {
 
 /* Стиль для текущего пользователя */
 #leaderboard tbody tr.current-user {
-    background-color: #ffeaa7; /* Выделение для текущего пользователя */
+    background-color: #ebebeb79; /* Выделение для текущего пользователя */
     font-weight: bold;
 }
 
