@@ -365,3 +365,25 @@ body.blur #game-board, body.blur .game-info {
     background-color: #febc2a; /* Цвет для первого места */
     color: #000; /* Черный текст */
 }
+
+
+.github-icon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.github-icon img:hover {
+    transform: scale(1.1);
+}
+
+.leaderboard-container {
+    position: relative;
+}
+
+.github-icon {
+    margin-top: 20px;
+    text-align: center;
+}
