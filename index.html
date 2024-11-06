@@ -9,9 +9,43 @@
     <script src="script.js" defer></script>
 </head>
 <body>
-    <div class="game-container">
-        <button id="start-button">Start</button>
-        <div id="game-board" class="game-board"></div>
+    <div class="main-container">
+        <div class="leaderboard-container">
+            <h2>Лидерборд</h2>
+            <table id="leaderboard">
+                <thead>
+                    <tr>
+                        <th>Имя</th>
+                        <th>Режим</th>
+                        <th>Очки</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Бот 1</td><td>Обычный</td><td>5000</td></tr>
+                    <tr><td>Бот 2</td><td>Хард</td><td>6000</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="game-setup">
+            <h2>Выбор режима</h2>
+            <div class="mode-selection">
+                <button id="default-mode" class="mode-btn">Обычный</button>
+                <button id="hard-mode" class="mode-btn">Хард</button>
+            </div>
+        
+            <h2>Выбор сетки</h2>
+            <div class="grid-selection">
+                <button data-grid="8" class="grid-btn">8 карточек</button>
+                <button data-grid="12" class="grid-btn">12 карточек</button>
+                <button data-grid="16" class="grid-btn">16 карточек</button>
+                <button data-grid="24" class="grid-btn">24 карточки</button>
+                <button data-grid="32" class="grid-btn">32 карточки</button>
+            </div>
+        
+            <input type="text" id="player-name" class="input1" placeholder="Введите ваше имя" maxlength="15"/>
+            <button id="start-button">Играть</button>
+        </div>
     </div>
 </body>
 </html>
