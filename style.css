@@ -8,14 +8,14 @@ body {
     margin-top: 40px;
     display: flex;
     justify-content: center;
-    align-items: start; /* Изменено на start для прокрутки */
+    align-items: start; 
     min-height: 100vh;
     background: linear-gradient(135deg, #1e3c72, #2a5298);
     font-family: 'Arial', sans-serif;
     color: #ffffff;
-    overflow-x: hidden; /* Ограничить прокрутку по горизонтали */
-    overflow-y: auto; /* Включить прокрутку по вертикали */
-    padding: 20px; /* Добавить отступы для удобства */
+    overflow-x: hidden; 
+    overflow-y: auto; 
+    padding: 20px; 
 }
 
 .main-container {
@@ -69,7 +69,7 @@ body {
 .info-section {
     display: flex;
     flex-direction: column;
-    align-items: flex-start; /* Выровнять текст по левой стороне */
+    align-items: flex-start; 
 }
 
 .game-info .info-row {
@@ -329,7 +329,7 @@ button.active {
 
 body.blur #exit-button {
     position: relative;
-    z-index: 1; /* Под победным сообщением */
+    z-index: 1; 
 }
 
 body.blur #game-board, body.blur .game-info {
@@ -339,31 +339,31 @@ body.blur #game-board, body.blur .game-info {
 
 .mode-selection .mode-btn.active,
 .grid-selection .grid-btn.active {
-    background-color: #ffcc00; /* Золотой цвет для активной кнопки */
-    color: #ffffff; /* Белый текст для контраста */
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Тень для выделения */
-    transform: scale(1.05); /* Лёгкое увеличение для визуального эффекта */
+    background-color: #ffcc00; 
+    color: #ffffff; 
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); 
+    transform: scale(1.05); 
 }
 
 
 
-/* Стиль для первого места */
+
 #leaderboard tbody tr.first-place {
-    background-color: #febc2a; /* Золотой цвет для первого места */
-    color: #000; /* Черный текст */
+    background-color: #febc2a; 
+    color: #000; 
     font-weight: bold;
 }
 
-/* Стиль для текущего пользователя */
+
 #leaderboard tbody tr.current-user {
-    background-color: #ebebeb79; /* Выделение для текущего пользователя */
+    background-color: #ebebeb79; 
     font-weight: bold;
 }
 
-/* Приоритетное правило для текущего пользователя на первом месте */
+
 #leaderboard tbody tr.first-place.current-user {
-    background-color: #febc2a; /* Цвет для первого места */
-    color: #000; /* Черный текст */
+    background-color: #febc2a; 
+    color: #000; 
 }
 
 

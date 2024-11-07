@@ -1,4 +1,4 @@
-// Функции для работы с localStorage
+// localStorage
 function loadUserData() {
     const data = localStorage.getItem('userData');
     return data ? JSON.parse(data) : {};
@@ -20,7 +20,7 @@ function clearCurrentUser() {
     localStorage.removeItem('currentUser');
 }
 
-// Инициализация данных для ботов
+// Bots
 function initializeBotData() {
     const initialData = {
         "Anton": { score: 5501 },
@@ -119,11 +119,19 @@ $(document).ready(function () {
         $('#player-name').hide();
         $('#start-button').text('Начать игру').show();
         $('#player-welcome').text(`Добро пожаловать, ${currentUser}!`).show();
+        $('#logout-container').show(); // Показываем кнопку логаута
         updateLeaderboard();
     } else {
         $('#player-welcome').hide();
         $('#start-button').text('Играть').show();
+        $('#logout-container').hide(); // Скрываем кнопку логаута, если пользователь не залогинен
     }
+
+    // Обработчик для кнопки логаута
+    $('#logout-button').click(function () {
+        clearCurrentUser(); // Очищаем текущего пользователя из localStorage
+        location.reload(); // Перезагружаем страницу для обновления интерфейса
+    });
 
     // Обработчики для выбора режима
     $('.mode-btn').click(function () {
@@ -150,6 +158,7 @@ $(document).ready(function () {
             updateUserScore(playerName, 0);
             $('#player-welcome').text(`Добро пожаловать, ${playerName}!`).show();
             $('#player-name').hide();
+            $('#logout-container').show(); // Показываем кнопку логаута после входа
         } else {
             playerName = currentUser;
         }
@@ -163,6 +172,7 @@ $(document).ready(function () {
     updateModeSelection();
     updateGridSelectionOptions();
 });
+
 
 
 // Код для game.html
@@ -184,7 +194,8 @@ $(document).ready(function () {
         let flippedCards = [];
         let matchedPairs = 0;
         let score = 0;
-        let multiplier = isHardMode ? getHardModeMultiplier(gridSize) : 1;
+        let multiplier = isHardMode ? getHardModeMultiplier(gridSize) : getNormalModeMultiplier(gridSize);
+        let gameFinished = false; // Флаг для отслеживания завершения игры
 
         createCards();
 
@@ -230,14 +241,26 @@ $(document).ready(function () {
 
         function getHardModeMultiplier(gridSize) {
             switch (gridSize) {
-                case 8:
-                case 12: return 2.1;
-                case 16: return 2.3;
-                case 24: return 2.5;
-                case 32: return 3;
+                case 10: return 2;
+                case 14: return 2.2;
+                case 18: return 2.5;
+                case 26: return 2.7;
+                case 34: return 3;
                 default: return 1;
             }
         }
+
+        function getNormalModeMultiplier(gridSize) {
+            switch (gridSize) {
+                case 8: return 1;
+                case 12: return 1.2;
+                case 16: return 1.5;
+                case 24: return 1.7;
+                case 32: return 2;
+                default: return 1;
+            }
+        }
+        
 
         function getBombCount(gridSize) {
             if (gridSize <= 16) return 2; // Одна пара бомб
@@ -245,16 +268,17 @@ $(document).ready(function () {
             return 6; // Три пары бомб для больших сеток
         }
 
+       // Обновляем обработчик кликов для проверки победы
         $('#game-board').on('click', '.card', function () {
             if ($(this).hasClass('flipped') || flippedCards.length === 2) return;
-        
+
             $(this).addClass('flipped');
             flippedCards.push($(this));
-        
+
             if (flippedCards.length === 2) {
                 const firstCard = flippedCards[0];
                 const secondCard = flippedCards[1];
-        
+
                 if (firstCard.data('pair-id') === secondCard.data('pair-id')) {
                     if (firstCard.data('pair-id') === 'BOMB') {
                         score = Math.max(score - 5000, -9999); // Отнимаем 5000 очков, ограничиваем минимумом -9999
@@ -264,12 +288,14 @@ $(document).ready(function () {
                         matchedPairs++;
                         score += 100 * multiplier;
                         $('#score-display').html(`<span class="label">Очки:</span> ${Math.round(score)}`);
-        
+
                         firstCard.addClass('match');
                         secondCard.addClass('match');
                         flippedCards = [];
-        
-                        if (matchedPairs === Math.floor(gridSize / 2)) {
+
+                        // Обновляем условие победы, чтобы игнорировать бомбы
+                        const nonBombPairs = images.filter(img => img.pairId !== 'BOMB').length / 2;
+                        if (matchedPairs === nonBombPairs) {
                             setTimeout(showVictoryMessage, 500);
                         }
                     }
@@ -287,15 +313,15 @@ $(document).ready(function () {
         function showVictoryMessage() {
             $('#victory-message').html('<p>Вы не попались!</p>').addClass('active');
             $('body').addClass('blur');
-            updateUserScore(playerName, score); // Сохраняем обновленный счет в таблицу лидеров
+            gameFinished = true; // Игра завершена победой
+            updateUserScore(playerName, score); // Сохраняем очки только при победе
             updateLeaderboard(); // Обновляем таблицу лидеров в реальном времени
         }
 
         function showLossMessage() {
             $('#victory-message').html('<p>Вы проиграли, попав на бомбу!</p>').addClass('active');
             $('body').addClass('blur');
-            updateUserScore(playerName, score); // Сохраняем счет в таблицу лидеров при проигрыше
-            updateLeaderboard();
+            gameFinished = true; // Игра завершена проигрышем
         }
 
         $('#restart-button').click(function () {
@@ -304,6 +330,10 @@ $(document).ready(function () {
         });
         
         $('#exit-button').click(function () {
+            if (gameFinished) {
+                // Сохраняем очки только если игра была завершена (победа или проигрыш)
+                updateUserScore(playerName, score);
+            }
             window.location.href = 'index.html';
         });
     }
