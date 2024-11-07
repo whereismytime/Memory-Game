@@ -3,31 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memory Game - Игровое Окно</title>
+    <title>Memory Game - Game Window</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="script.js" defer></script>
 </head>
 <body>
     <div class="game-container">
-        
-
-        <div id="score-display">Очки: 0</div>
+        <div id="score-display">Score: 0</div>
         <div class="game-info">
             <div class="info-section">
-                <div><span class="info-label">Игрок:</span> <span id="player-name-display"></span></div>
-                <div><span class="info-label">Режим:</span> <span id="mode-display"></span></div>
-                <div><span class="info-label">Сетка:</span> <span id="grid-size-display"></span></div>
+                <div><span class="info-label">Player:</span> <span id="player-name-display"></span></div>
+                <div><span class="info-label">Mode:</span> <span id="mode-display"></span></div>
+                <div><span class="info-label">Grid:</span> <span id="grid-size-display"></span></div>
             </div>
         </div>
 
         <div id="game-board" class="game-board"></div>
         <div class="exit-button-container">
-            <button id="exit-button">Выйти из игры</button>
+            <button id="exit-button">Exit Game</button>
         </div>
         <div id="victory-message" class="victory-message hidden">
-            <p>Поздравляем, вы выиграли!</p>
-            <button id="restart-button">Играть снова</button>
+            <p>Congratulations, you won!</p>
+            <button id="restart-button">Play Again</button>
         </div>
     </div>
 </body>

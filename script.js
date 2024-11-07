@@ -93,9 +93,8 @@ $(document).ready(function () {
     initializeBotData();
 
     const currentUser = getCurrentUser();
-    const selectedMode = { mode: 'Обычный', gridSize: 8 };
+    const selectedMode = { mode: 'Normal', gridSize: 8 };
 
-    // Обновление состояния кнопок
     function updateModeSelection() {
         $('.mode-btn').removeClass('active');
         $(`#${selectedMode.mode.toLowerCase()}-mode`).addClass('active');
@@ -105,8 +104,8 @@ $(document).ready(function () {
     function updateGridSelectionOptions() {
         $('.grid-btn').each(function () {
             let baseGridSize = parseInt($(this).data('base-grid'), 10);
-            let adjustedGridSize = selectedMode.mode === 'Хард' ? baseGridSize + 2 : baseGridSize;
-            $(this).text(`${adjustedGridSize} карточек`).data('grid', adjustedGridSize);
+            let adjustedGridSize = selectedMode.mode === 'Hard' ? baseGridSize + 2 : baseGridSize;
+            $(this).text(`${adjustedGridSize} cards`).data('grid', adjustedGridSize);
         });
     }
 
@@ -117,30 +116,27 @@ $(document).ready(function () {
 
     if (currentUser) {
         $('#player-name').hide();
-        $('#start-button').text('Начать игру').show();
-        $('#player-welcome').text(`Добро пожаловать, ${currentUser}!`).show();
-        $('#logout-container').show(); // Показываем кнопку логаута
+        $('#start-button').text('Start Game').show();
+        $('#player-welcome').text(`Welcome, ${currentUser}!`).show();
+        $('#logout-container').show();
         updateLeaderboard();
     } else {
         $('#player-welcome').hide();
-        $('#start-button').text('Играть').show();
-        $('#logout-container').hide(); // Скрываем кнопку логаута, если пользователь не залогинен
+        $('#start-button').text('Play').show();
+        $('#logout-container').hide();
     }
 
-    // Обработчик для кнопки логаута
     $('#logout-button').click(function () {
-        clearCurrentUser(); // Очищаем текущего пользователя из localStorage
-        location.reload(); // Перезагружаем страницу для обновления интерфейса
+        clearCurrentUser();
+        location.reload();
     });
 
-    // Обработчики для выбора режима
     $('.mode-btn').click(function () {
         selectedMode.mode = $(this).text();
         updateModeSelection();
         updateGridSelectionOptions();
     });
 
-    // Обработчики для выбора сетки
     $('.grid-btn').click(function () {
         selectedMode.gridSize = $(this).data('grid');
         updateGridSelection();
@@ -151,14 +147,14 @@ $(document).ready(function () {
 
         if (!currentUser) {
             if (!playerName || playerName.length < 3) {
-                alert("Введите имя (минимум 3 символа)");
+                alert("Please enter a name (minimum 3 characters)");
                 return;
             }
             setCurrentUser(playerName);
             updateUserScore(playerName, 0);
-            $('#player-welcome').text(`Добро пожаловать, ${playerName}!`).show();
+            $('#player-welcome').text(`Welcome, ${playerName}!`).show();
             $('#player-name').hide();
-            $('#logout-container').show(); // Показываем кнопку логаута после входа
+            $('#logout-container').show();
         } else {
             playerName = currentUser;
         }
@@ -175,6 +171,7 @@ $(document).ready(function () {
 
 
 
+
 // Код для game.html
 
 $(document).ready(function () {
@@ -182,20 +179,20 @@ $(document).ready(function () {
         const urlParams = new URLSearchParams(window.location.search);
         const currentUser = getCurrentUser();
         const playerName = currentUser || urlParams.get('name');
-        const gameMode = urlParams.get('mode') || "Обычный";
+        const gameMode = urlParams.get('mode') || "Normal";
         const gridSize = parseInt(urlParams.get('gridSize')) || 8;
         const isHardMode = gameMode === "Хард";
 
         $('#player-name-display').html(playerName);
         $('#mode-display').html(gameMode);
-        $('#grid-size-display').html(`${gridSize} карточек`);
+        $('#grid-size-display').html(`${gridSize} cards`);
 
         let images = generateImagePairs(gridSize / 2, isHardMode);
         let flippedCards = [];
         let matchedPairs = 0;
         let score = 0;
         let multiplier = isHardMode ? getHardModeMultiplier(gridSize) : getNormalModeMultiplier(gridSize);
-        let gameFinished = false; // Флаг для отслеживания завершения игры
+        let gameFinished = false; 
 
         createCards();
 
@@ -218,17 +215,17 @@ $(document).ready(function () {
         function generateImagePairs(numPairs, isHardMode) {
             let pairs = [];
         
-            // Если режим "Хард", уменьшаем количество пар, чтобы освободить место для бомб
+            
             const bombCount = isHardMode ? getBombCount(numPairs * 2) : 0;
             const adjustedNumPairs = numPairs - Math.floor(bombCount / 2);
         
-            // Генерируем пары изображений
+            
             for (let i = 1; i <= adjustedNumPairs; i++) {
                 pairs.push({ src: `img/img${i}.jpg`, pairId: i });
                 pairs.push({ src: `img/img${i}.jpg`, pairId: i });
             }
         
-            // Добавляем бомбы, если включен режим "Хард"
+            
             if (isHardMode) {
                 for (let i = 0; i < bombCount; i++) {
                     pairs.push({ src: 'img/imjBOMB.jpg', pairId: 'BOMB' });
@@ -263,12 +260,12 @@ $(document).ready(function () {
         
 
         function getBombCount(gridSize) {
-            if (gridSize <= 16) return 2; // Одна пара бомб
-            if (gridSize <= 24) return 4; // Две пары бомб
-            return 6; // Три пары бомб для больших сеток
+            if (gridSize <= 16) return 2; 
+            if (gridSize <= 24) return 4; 
+            return 6; 
         }
 
-       // Обновляем обработчик кликов для проверки победы
+       
         $('#game-board').on('click', '.card', function () {
             if ($(this).hasClass('flipped') || flippedCards.length === 2) return;
 
@@ -281,19 +278,19 @@ $(document).ready(function () {
 
                 if (firstCard.data('pair-id') === secondCard.data('pair-id')) {
                     if (firstCard.data('pair-id') === 'BOMB') {
-                        score = Math.max(score - 5000, -9999); // Отнимаем 5000 очков, ограничиваем минимумом -9999
-                        $('#score-display').html(`<span class="label">Очки:</span> ${Math.round(score)}`);
-                        setTimeout(showLossMessage, 500); // Показываем сообщение о проигрыше
+                        score = Math.max(score - 5000, -9999); 
+                        $('#score-display').html(`<span class="label">Score:</span> ${Math.round(score)}`);
+                        setTimeout(showLossMessage, 500); 
                     } else {
                         matchedPairs++;
                         score += 100 * multiplier;
-                        $('#score-display').html(`<span class="label">Очки:</span> ${Math.round(score)}`);
+                        $('#score-display').html(`<span class="label">Score:</span> ${Math.round(score)}`);
 
                         firstCard.addClass('match');
                         secondCard.addClass('match');
                         flippedCards = [];
 
-                        // Обновляем условие победы, чтобы игнорировать бомбы
+                        
                         const nonBombPairs = images.filter(img => img.pairId !== 'BOMB').length / 2;
                         if (matchedPairs === nonBombPairs) {
                             setTimeout(showVictoryMessage, 500);
@@ -311,17 +308,17 @@ $(document).ready(function () {
         });
 
         function showVictoryMessage() {
-            $('#victory-message').html('<p>Вы не попались!</p>').addClass('active');
+            $('#victory-message').html('<p>You didnt get caught!</p>').addClass('active');
             $('body').addClass('blur');
-            gameFinished = true; // Игра завершена победой
-            updateUserScore(playerName, score); // Сохраняем очки только при победе
-            updateLeaderboard(); // Обновляем таблицу лидеров в реальном времени
+            gameFinished = true; 
+            updateUserScore(playerName, score); 
+            updateLeaderboard(); 
         }
 
         function showLossMessage() {
-            $('#victory-message').html('<p>Вы проиграли, попав на бомбу!</p>').addClass('active');
+            $('#victory-message').html('<p>You lost by hitting the bomb!</p>').addClass('active');
             $('body').addClass('blur');
-            gameFinished = true; // Игра завершена проигрышем
+            gameFinished = true; 
         }
 
         $('#restart-button').click(function () {
@@ -331,7 +328,7 @@ $(document).ready(function () {
         
         $('#exit-button').click(function () {
             if (gameFinished) {
-                // Сохраняем очки только если игра была завершена (победа или проигрыш)
+                
                 updateUserScore(playerName, score);
             }
             window.location.href = 'index.html';
